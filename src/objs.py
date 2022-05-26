@@ -17,4 +17,4 @@ torrent = py1337x.py1337x(proxy='1337xx.to', cache=config['cache'], cacheTime=co
 
 botId = config['botToken'].split(':')[0]
 bot = telebot.TeleBot(config['botToken'], parse_mode='HTML')
-botUsername = '@'+bot.get_me().username
+botUsername = f'@{bot.get_me().username}'

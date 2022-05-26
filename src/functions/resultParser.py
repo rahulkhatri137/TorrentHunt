@@ -6,7 +6,7 @@ def result(response, userLanguage, resultType, torrentType, page, category=None,
     markup = telebot.types.InlineKeyboardMarkup()
     markup.one_time_keyboard=True
     markup.row_width = 5
-    
+
     msg = ''
     if response['items']:
         for count, item in enumerate(response['items']):
@@ -26,28 +26,28 @@ def result(response, userLanguage, resultType, torrentType, page, category=None,
         #! Trending, popular and top torrents has more than 20 items in the same page
         if torrentType in ['trending', 'popular', 'top']:
             if response['itemCount'] > 20:
-                buttons =  []
-                for i in range(1, -(-response['itemCount'] // 20)+1):
-                    buttons.append(telebot.types.InlineKeyboardButton('🔘' if i == page else i, callback_data=f"cb_nextPage{time()}:{i}:{torrentType}-{category}-{week}:{query or ''}"))
+                buttons = [
+                    telebot.types.InlineKeyboardButton(
+                        '🔘' if i == page else i,
+                        callback_data=f"cb_nextPage{time()}:{i}:{torrentType}-{category}-{week}:{query or ''}",
+                    )
+                    for i in range(1, -(-response['itemCount'] // 20) + 1)
+                ]
 
                 markup.add(*buttons)
 
-        #! For other category, create page according to pageCount
         elif pageCount > 1:
             #! FirstPage is the firstPage in a page list. Eg: FirstPage of (1 to 10) is 1, (11 to 20) is 11.
-            firstPage = 1
-            for i in range(-(-page // 10)-1):
-                firstPage += 10
-            
+            firstPage = 1 + sum(10 for _ in range(-(-page // 10)-1))
             buttons =  []
             for i in range(firstPage, pageCount+1):
                 #! Show 10 buttons at once
                 if len(buttons) >= 10:
                     break
-                
+
                 cb = f"q{str(time())[-3:]}:{i}:{query}" if query else f"cb_nextPage{time()}:{i}:{torrentType}-{category}-{week}:{query or ''}"
                 buttons.append(telebot.types.InlineKeyboardButton('🔘' if i == page else i, callback_data=cb))
-            
+
             markup.add(*buttons)
             if pageCount > 10:
                 if page <= 10:
@@ -59,11 +59,11 @@ def result(response, userLanguage, resultType, torrentType, page, category=None,
                     cb2 = f"q{str(time())[-3:]}:{firstPage+10}:{query}" if query else f"cb_nextPage{time()}:{firstPage+10}:{torrentType}-{category}-{week}"
 
                     markup.add(telebot.types.InlineKeyboardButton(language['previousBtn'][userLanguage], callback_data=cb1), telebot.types.InlineKeyboardButton(language['nextBtn'][userLanguage], callback_data=cb2))
-                
+
                 else:
                     cb = f"q{str(time())[-3:]}:{firstPage-10}:{query}" if query else f"cb_nextPage{time()}:{firstPage-10}:{torrentType}-{category}-{week}"
                     markup.add(telebot.types.InlineKeyboardButton(language['previousBtn'][userLanguage], callback_data=cb))                      
-                        
+
     if query:
         if not msg:
             query = originalQuery
@@ -73,11 +73,10 @@ def result(response, userLanguage, resultType, torrentType, page, category=None,
         markup.add(telebot.types.InlineKeyboardButton(text='Zooqle', switch_inline_query_current_chat=f"!zoo {query}"), telebot.types.InlineKeyboardButton(text='Kick Ass', switch_inline_query_current_chat=f"!ka {query}") , telebot.types.InlineKeyboardButton(text='Bit Search', switch_inline_query_current_chat=f"!bs {query}"))
         markup.add(telebot.types.InlineKeyboardButton(text='Glodls', switch_inline_query_current_chat=f"!gl {query}"), telebot.types.InlineKeyboardButton(text='Magnet DL', switch_inline_query_current_chat=f"!mdl {query}") , telebot.types.InlineKeyboardButton(text='Lime Torrent', switch_inline_query_current_chat=f"!lt {query}"))
         markup.add(telebot.types.InlineKeyboardButton(text='Torrent Funk', switch_inline_query_current_chat=f"!tf {query}"), telebot.types.InlineKeyboardButton(text='Torrent Project', switch_inline_query_current_chat=f"!tp {query}"))
-    
-    
-    else:
-        if msg:
-            markup.add(telebot.types.InlineKeyboardButton(text='🌟 Rate ', url='https://t.me/tlgrmcbot?start=torrenthuntbot-review'), telebot.types.InlineKeyboardButton(text=language['donateBtn'][userLanguage], url='https://buymeacoffee.com/hemantapkh'))
-    
+
+
+    elif msg:
+        markup.add(telebot.types.InlineKeyboardButton(text='🌟 Rate ', url='https://t.me/tlgrmcbot?start=torrenthuntbot-review'), telebot.types.InlineKeyboardButton(text=language['donateBtn'][userLanguage], url='https://buymeacoffee.com/hemantapkh'))
+
     return msg, markup
     

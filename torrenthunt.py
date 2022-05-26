@@ -12,13 +12,12 @@ app = web.Application()
 
 #: Process webhook calls
 async def handle(request):
-    if request.match_info.get('token') == bot.token:
-        request_body_dict = await request.json()
-        update = telebot.types.Update.de_json(request_body_dict)
-        bot.process_new_updates([update])
-        return web.Response()
-    else:
+    if request.match_info.get('token') != bot.token:
         return web.Response(status=403)
+    request_body_dict = await request.json()
+    update = telebot.types.Update.de_json(request_body_dict)
+    bot.process_new_updates([update])
+    return web.Response()
 
 app.router.add_post('/{token}/', handle)
     
@@ -26,7 +25,7 @@ app.router.add_post('/{token}/', handle)
 @bot.message_handler(content_types=['text'])
 def text(message):
     userLanguage = dbSql.getSetting(message.chat.id, 'language')
-    
+
     if message.chat.type != 'private' or floodControl(message, userLanguage):
         if 'via_bot' in message.json.keys():
             #! Don't search if the message is via the same bot
@@ -34,48 +33,35 @@ def text(message):
                 if message.text.startswith('💫'):
                     message.text = message.text[1:]
                     querySearch(message, userLanguage)
-                
-                else:
-                    pass
 
-            #! IMDB bot
             elif message.json['via_bot']['username'] == 'imdb':
                 message.text = message.text.split(' •')[0]
                 querySearch(message, userLanguage)
-        
-        #! Main menu
+
         elif message.text == language['mainMenuBtn'][userLanguage]:
             bot.send_message(message.chat.id, text=language['backToMenu'][userLanguage], reply_markup=mainReplyKeyboard(userLanguage))
-        
-        #! Trending torrents
+
         elif message.text in ['/trending', language['trendingBtn'][userLanguage]]:
             browse(message, userLanguage, 'trending')
 
-        #! Popular torrents
         elif message.text in ['/popular', language['popularBtn'][userLanguage]]:
             browse(message, userLanguage, 'popular')
-            
-        #! Top torrents
+
         elif message.text in ['/top', language['topBtn'][userLanguage]]:
             browse(message, userLanguage, 'top')
-        
-        #! Browse torrents
+
         elif message.text in ['/browse', language['browseBtn'][userLanguage]]:
             browse(message, userLanguage, 'browse')
 
-        # Settings
         elif message.text == language['settingsBtn'][userLanguage]:
             settings(message, userLanguage)
 
-        #! Help
         elif message.text == language['helpBtn'][userLanguage]:
             help(message, userLanguage)
 
-        #! Support
         elif message.text == language['supportBtn'][userLanguage]:
             support(message, userLanguage)
-        
-        #! Query search
+
         else:
             querySearch(message, userLanguage)
 

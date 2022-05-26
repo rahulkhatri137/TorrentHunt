@@ -17,16 +17,22 @@ class dbQuery():
 
         if not isRegistered:
             if chatType == 'users':
-                cur.execute(f"Insert into {chatType} (userId, date) values ({userId}, \"{datetime.today().strftime('%Y-%m-%d')}\")")
+                cur.execute(
+                    f"""Insert into {chatType} (userId, date) values ({userId}, "{datetime.now().strftime('%Y-%m-%d')}")"""
+                )
+
                 cur.execute(f'Insert into flood (ownerId) values ({userId})')
 
             else:
-                cur.execute(f"Insert into {chatType} (userId, userName, date) values ({userId}, \"{userName}\", \"{datetime.today().strftime('%Y-%m-%d')}\")")
-            
+                cur.execute(
+                    f"""Insert into {chatType} (userId, userName, date) values ({userId}, "{userName}", "{datetime.now().strftime('%Y-%m-%d')}")"""
+                )
+
+
             cur.execute(f'Insert into settings (ownerId) values ({userId})')
-                        
+
             con.commit()
-        
+
         return isRegistered
 
     #: Find if a user is registered or not
@@ -37,7 +43,7 @@ class dbQuery():
         isRegistered = cur.execute(f'SELECT * FROM {chatType} WHERE userId={userId}').fetchone()
         con.commit()
 
-        return True if isRegistered else False
+        return bool(isRegistered)
 
     #: Get all the registered users
     def getAllUsers(self, type='users', date=None, countOnly=False):

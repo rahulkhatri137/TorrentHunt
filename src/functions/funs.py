@@ -7,11 +7,7 @@ from src.functions.keyboard import notSubscribedMarkup
 def shortner(url):
     short = requests.get(f'https://is.gd/create.php?format=simple&url={url}')
 
-    if short.ok:
-        return short.text
-    
-    else:
-        return "ERROR"
+    return short.text if short.ok else "ERROR"
 
 #: Get suggestion query
 def getSuggestions(query):
@@ -28,24 +24,20 @@ def getSuggestions(query):
 
 #: Sort list according to the length of elements
 def sortList(lst):
-    lst2 = sorted(lst, key=len)
-    return lst2
+    return sorted(lst, key=len)
 
 # Check if the user is subscribed or not, returns True if subscribed
 def isSubscribed(message, userLanguage=None, sendMessage=True):
     telegramId = message.from_user.id
-    
+
     try:
         response = requests.get('https://hemantapokharel.com.np/isSubscribed', params={'userid': telegramId}).json()
-        subscribed = response['subscribed']
-
-        if subscribed:
+        if subscribed := response['subscribed']:
             return True
-        
-        else:
-            if sendMessage:
-                bot.send_message(message.chat.id, text=language['notSubscribed'][userLanguage], reply_markup=notSubscribedMarkup(userLanguage))
-            return False
+
+        if sendMessage:
+            bot.send_message(message.chat.id, text=language['notSubscribed'][userLanguage], reply_markup=notSubscribedMarkup(userLanguage))
+        return False
 
     except Exception:
         return True

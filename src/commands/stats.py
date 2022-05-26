@@ -29,19 +29,25 @@ def stats(message):
     userLanguage = dbSql.getSetting(message.from_user.id, 'language')
 
     if message.chat.type != 'private' or floodControl(message, userLanguage):
-        currentDate = datetime.today().strftime('%Y-%m-%d')
-        
+        currentDate = datetime.now().strftime('%Y-%m-%d')
+
         msg = f'<b>📊 Statistics</b>\n\n'
-        
-        languageStats = {}
-        for i in languageSet:
-            languageStats[i.capitalize()] = dbSql.getUsers(i, countOnly=True)
 
-        languageStats = {k: v for k, v in sorted(languageStats.items(), key=lambda item: item[1], reverse=True)}
+        languageStats = {
+            i.capitalize(): dbSql.getUsers(i, countOnly=True)
+            for i in languageSet
+        }
 
-        for i in languageStats:
-            msg += f'{i}: {languageStats[i]}\n'
-        
+        languageStats = dict(
+            sorted(
+                languageStats.items(), key=lambda item: item[1], reverse=True
+            )
+        )
+
+
+        for i, value in languageStats.items():
+            msg += f'{i}: {value}\n'
+
         totalUsers = dbSql.getAllUsers(countOnly=True)
         totalGroups = dbSql.getAllUsers(type="groups", countOnly=True)
 

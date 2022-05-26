@@ -3,14 +3,17 @@ from src.objs import *
 
 #: Flood prevention
 def floodControl(message, userLanguage):
-    called = True if type(message) == telebot.types.CallbackQuery else False
+    called = type(message) == telebot.types.CallbackQuery
     userId = message.message.chat.id if called else message.chat.id
-    
+
     if userId == int(config['adminId']):
         return True
 
     #! If the user is not banned
-    if not dbSql.getSetting(userId, 'blockTill', table='flood') - int(time.time())  > 0:
+    if (
+        dbSql.getSetting(userId, 'blockTill', table='flood') - int(time.time())
+        <= 0
+    ):
         lastMessage = dbSql.getSetting(userId, 'lastMessage', table='flood')
         messageDate = int(time.time()) if called else message.date
 
@@ -21,14 +24,14 @@ def floodControl(message, userLanguage):
                 bot.send_message(userId, language['blockedTooFast'][userLanguage])
                 dbSql.setSetting(userId, 'blockTill', int(time.time())+300, table='flood')
                 dbSql.setSetting(userId, 'warned', 0, table='flood')
-            
+
             #! If the user is not warned, warn for the first time
             else:
                 bot.send_message(userId, language['warningTooFast'][userLanguage])
                 dbSql.setSetting(userId, 'warned', 1, table='flood')
-            
+
             return False
-        
+
         #! No spam
         else:
             dbSql.setSetting(userId, 'lastMessage', messageDate, table='flood')

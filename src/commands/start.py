@@ -21,19 +21,17 @@ def start(message):
 
                 except Exception:
                     bot.send_message(message.chat.id, text=language['greet'][userLanguage].format(message.from_user.first_name), reply_markup=mainReplyKeyboard(userLanguage), disable_web_page_preview=True)
-        
-            else:
-                bot.send_message(message.chat.id, text=language['greet'][userLanguage].format(message.from_user.first_name), reply_markup=mainReplyKeyboard(userLanguage), disable_web_page_preview=True)
-        
-        else:
-            bot.send_message(message.chat.id, text=language['greetGroup'][userLanguage].format(message.chat.title), disable_web_page_preview=True)
-    else:
-        if message.chat.type == 'private':
-            lang(message, userLanguage='english', greet=True)
-        
-        else:
-            if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
-                lang(message, userLanguage='english', greet=True)
 
             else:
-                bot.send_message(message.chat.id, text=language['greetGroup']['english'].format(message.chat.title), disable_web_page_preview=True)
+                bot.send_message(message.chat.id, text=language['greet'][userLanguage].format(message.from_user.first_name), reply_markup=mainReplyKeyboard(userLanguage), disable_web_page_preview=True)
+
+        else:
+            bot.send_message(message.chat.id, text=language['greetGroup'][userLanguage].format(message.chat.title), disable_web_page_preview=True)
+    elif message.chat.type == 'private':
+        lang(message, userLanguage='english', greet=True)
+
+    elif bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
+        lang(message, userLanguage='english', greet=True)
+
+    else:
+        bot.send_message(message.chat.id, text=language['greetGroup']['english'].format(message.chat.title), disable_web_page_preview=True)
